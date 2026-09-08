@@ -91,7 +91,7 @@ python3 scripts/yotta_prompt.py scenarios
 示例输出：
 
 ```
-元引 yotta-prompt v0.1.1 —— 意图澄清
+元引 yotta-prompt v0.2.0 —— 意图澄清
 输入：「帮我写一封邮件」
 
 我猜你想做这几件事（回复数字选择，或直接说出你的选择）：
@@ -148,6 +148,10 @@ python scripts/test_yotta_prompt.py
 ```
 
 场景走查见 `references/scenarios.md`。
+
+## 参考文档
+
+- references/faq.md
 
 ## 许可证
 
