@@ -47,7 +47,7 @@ try:
 except Exception:
     pass
 
-VERSION = "0.2.1"
+VERSION = "0.2.2"
 TOOL = "yotta-prompt"
 TOOL_CN = "元引"
 
@@ -405,19 +405,77 @@ def render_clarify(text, cands, lang="zh"):
     return "\n".join(lines)
 
 
+UNRECOGNIZED_DOMAIN_IDS = ("writing", "dev", "analysis")
+
+
+def _unrecognized_questions(lang="zh"):
+    if lang == "en":
+        return [
+            {"id": "outcome", "question": "What final result do you want?"},
+            {"id": "domain", "question": "What topic or field is this about?"},
+            {"id": "format", "question": "What output form and length do you want?"},
+        ]
+    return [
+        {"id": "outcome", "question": "你希望得到的最终结果是什么？"},
+        {"id": "domain", "question": "这件事的主题或领域是什么？"},
+        {"id": "format", "question": "你希望的输出形式和长度是什么？"},
+    ]
+
+
+def _unrecognized_choices(lang="zh"):
+    out = []
+    for dom_id in UNRECOGNIZED_DOMAIN_IDS:
+        d = DOMAIN_BY_ID[dom_id]
+        out.append({
+            "id": dom_id,
+            "label": d["label_en"] if lang == "en" else d["label_zh"],
+        })
+    return out
+
+
+def _unrecognized_template(text, lang="zh"):
+    if lang == "en":
+        return (
+            "Please clarify my request before taking action.\n"
+            "Original input: \"%s\"\n\n"
+            "1. Final result: [fill in]\n"
+            "2. Topic / field: [fill in]\n"
+            "3. Output form and length: [fill in]\n\n"
+            "If the information is still incomplete, offer 2-4 candidate directions, "
+            "recommend one, and ask me to choose."
+        ) % text
+    return (
+        "我想请你先帮我澄清需求，不要直接执行。\n"
+        "我的原始输入：「%s」\n\n"
+        "1. 最终结果：[填写]\n"
+        "2. 主题/领域：[填写]\n"
+        "3. 输出形式与长度：[填写]\n\n"
+        "如果信息仍不足，请给出 2-4 个候选方向并推荐一个，再让我选择。"
+    ) % text
+
+
 def render_unrecognized(text, lang="zh"):
     lines = ["%s %s v%s —— 意图澄清" % (TOOL_CN, TOOL, VERSION)]
     lines.append("输入：「%s」" % text)
     lines.append("")
     lines.append("我暂时没能识别出你的意图。没关系，再给我一点信息，比如：")
-    lines.append("- 你想得到什么结果（写一段文字 / 查一个东西 / 记住一件事…）？")
-    lines.append("- 这件事跟什么有关（代码 / 邮件 / 日志 / 学习…）？")
+    lines.append("请复制下面这段补充信息，直接回复即可：")
+    lines.append("")
+    lines.append("我想请你先帮我澄清需求，不要直接执行。")
+    lines.append("我的原始输入：「%s」" % text)
+    lines.append("")
+    for i, item in enumerate(_unrecognized_questions(lang), 1):
+        label = "Final result" if lang == "en" and item["id"] == "outcome" else (
+            "Topic / field" if lang == "en" and item["id"] == "domain" else (
+                "Output form and length" if lang == "en" else
+                {"outcome": "最终结果", "domain": "主题/领域", "format": "输出形式与长度"}[item["id"]]
+            )
+        )
+        lines.append("%d. %s：[填写]" % (i, label))
     lines.append("")
     lines.append("也可以从这些常见方向里选一个：")
-    for i, dom_id in enumerate(["writing", "analysis", "planning", "memory", "dev", "logs", "learning", "security", "quality"], 1):
-        d = DOMAIN_BY_ID[dom_id]
-        label = d["label_en"] if lang == "en" else d["label_zh"]
-        lines.append("%d. %s（%s）" % (i, label, dom_id))
+    for label, item in zip(("A", "B", "C"), _unrecognized_choices(lang)):
+        lines.append("%s. %s（%s）" % (label, item["label"], item["id"]))
     return "\n".join(lines)
 
 
@@ -483,6 +541,9 @@ def cmd_clarify(args):
             payload = {
                 "tool": TOOL, "version": VERSION, "input": text, "recognized": False,
                 "guidance": "未识别出意图。请补充：想得到什么结果 / 与什么相关 / 输出形态；也可从常见方向（写作 / 记忆 / 开发 / 日志 / 学习 / 安全 / 质量）里选一个。",
+                "questions": _unrecognized_questions(args.lang),
+                "choices": _unrecognized_choices(args.lang),
+                "template": _unrecognized_template(text, args.lang),
             }
             print(json.dumps(payload, ensure_ascii=False, indent=2))
         else:
@@ -494,6 +555,9 @@ def cmd_clarify(args):
             payload = {
                 "tool": TOOL, "version": VERSION, "input": text, "recognized": False,
                 "guidance": "未识别出意图。请补充：想得到什么结果 / 与什么相关 / 输出形态；也可从常见方向（写作 / 记忆 / 开发 / 日志 / 学习 / 安全 / 质量）里选一个。",
+                "questions": _unrecognized_questions(args.lang),
+                "choices": _unrecognized_choices(args.lang),
+                "template": _unrecognized_template(text, args.lang),
             }
             print(json.dumps(payload, ensure_ascii=False, indent=2))
         else:

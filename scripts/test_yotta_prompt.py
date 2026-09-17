@@ -99,6 +99,10 @@ class TestClarifyCLI(unittest.TestCase):
         r = run_cli("clarify", "你好呀")
         self.assertEqual(r.returncode, 1)
         self.assertIn("没能识别出", r.stdout)
+        self.assertIn("请复制下面这段补充信息", r.stdout)
+        self.assertIn("1. 最终结果", r.stdout)
+        self.assertIn("2. 主题/领域", r.stdout)
+        self.assertIn("3. 输出形式与长度", r.stdout)
 
     def test_empty_input_exit4(self):
         r = run_cli("clarify", "")
@@ -124,6 +128,9 @@ class TestClarifyCLI(unittest.TestCase):
         self.assertEqual(r.returncode, 1)
         data = json.loads(r.stdout)
         self.assertFalse(data["recognized"])
+        self.assertEqual(len(data["questions"]), 3)
+        self.assertGreaterEqual(len(data["choices"]), 3)
+        self.assertIn("哈哈", data["template"])
 
     def test_top_limit(self):
         r = run_cli("clarify", "写代码修 bug 记笔记查日志", "--top", "2", "--json")
@@ -220,7 +227,7 @@ class TestMisc(unittest.TestCase):
     def test_version(self):
         r = run_cli("--version")
         self.assertEqual(r.returncode, 0)
-        self.assertIn("0.2.1", r.stdout)
+        self.assertIn("0.2.2", r.stdout)
 
     def test_no_command_exit4(self):
         r = run_cli()

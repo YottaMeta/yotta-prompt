@@ -86,7 +86,7 @@ Exit codes: **0** = success; **1** = not recognized (guidance printed); **4** = 
 Sample text output:
 
 ```
-元引 yotta-prompt v0.2.1 —— 意图澄清
+元引 yotta-prompt v0.2.2 —— 意图澄清
 输入：「帮我写一封邮件」
 
 我猜你想做这几件事（回复数字选择，或直接说出你的选择）：
