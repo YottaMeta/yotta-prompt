@@ -91,7 +91,7 @@ python3 scripts/yotta_prompt.py scenarios
 示例输出：
 
 ```
-元引 yotta-prompt v0.2.2 —— 意图澄清
+元引 yotta-prompt v0.2.3 —— 意图澄清
 输入：「帮我写一封邮件」
 
 我猜你想做这几件事（回复数字选择，或直接说出你的选择）：
